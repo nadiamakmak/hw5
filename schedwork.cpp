@@ -72,19 +72,23 @@ bool createSchedule(DailySchedule& schedule, const AvailabilityMatrix& available
 
         schedule[today].push_back(currWorker); //otherwise, we add them to the schedule to work today
 
-        if(schedule[today].size()==dailyNeed){ //if we have scheduled the amount of people we need for today, we're going to add a new day
-            schedule.emplace_back();
+        if(schedule[today].size()==dailyNeed){ //if we have scheduled the amount of people we need for today
+            schedule.emplace_back(); //add a new day
+
+            if(createSchedule(schedule, available, maxShifts, dailyNeed)==true){ //start filling in the next spot
+                return true;
+            }
+
+            else{ //if filling in the next spot doesn't work, remove the day we just added
+                schedule.pop_back();
+            }
         }
 
-        if(createSchedule(schedule, available, maxShifts, dailyNeed)==true){ //start filling in the next spot
+        else if(createSchedule(schedule, available, maxShifts, dailyNeed)==true){ //otherwise, don't add a new day, just start filling in the next spot
             return true;
         }
-
-        //getting to this point meant we have backtraced 
-        if(schedule[today].size()==dailyNeed){ //if we have to backtrace, check again if we need to add a new day
-            schedule.pop_back();
-        }
-
+        
+        //getting here meant we had to backtrace in one of the previous statements
         schedule[today].pop_back(); //remove the worker for which scheduling didn't work for, and increment to try with the next worker
         currWorker++;
     }
